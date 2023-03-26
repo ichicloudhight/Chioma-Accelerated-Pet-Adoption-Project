@@ -1,0 +1,41 @@
+pipeline{
+    agent any
+    tools {
+    maven 'maven'
+  }
+  
+    stages{
+        stage('Trigger k8s installation Playbooks') {
+            steps { 
+                sshagent(['jenkins']) {
+                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@18.170.220.13 "ansible-playbook -i /etc/ansible/hosts /home/ubuntu/installation.yml"'
+                }
+            }
+        }
+        stage('create cluster') {
+            steps { 
+                sshagent(['jenkins']) {
+                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@18.170.220.13 "ansible-playbook -i /etc/ansible/hosts /home/ubuntu/cluster.yml"'
+                }
+            }
+        }
+        stage('add wokers to created cluster') {
+            steps { 
+                sshagent(['jenkins']) {
+                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@18.170.220.13 "ansible-playbook -i /etc/ansible/hosts /home/ubuntu/join.yml"'
+                }
+            }
+        }
+ 
+     stage ('Deploy'){
+            input{
+                message "Do you want to proceed with deployment?"
+           }
+            steps { 
+                sshagent(['jenkins']) {
+                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@18.170.220.13 "ansible-playbook -i /etc/ansible/hosts /home/ubuntu/deployment.yml"'
+                }
+            }
+        }
+    }
+}
