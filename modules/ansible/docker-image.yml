@@ -1,0 +1,21 @@
+touch /opt/docker/docker-image.yml
+cat <<EOT>> /opt/docker/docker-image.yml
+---
+ - hosts: localhost
+  #root access to user
+   become: true
+   tasks:
+   - name: login to dockerhub
+     command: docker login -u cloudhight -p CloudHight_Admin123@
+   - name: Create docker image from Pet Adoption war file
+     command: docker build -t pet-adoption-image .
+     args:
+       chdir: /opt/docker
+   - name: Add tag to image
+     command: docker tag pet-adoption-image cloudhight/pet-adoption-image
+   - name: Push image to docker hub
+     command: docker push cloudhight/pet-adoption-image
+   - name: Remove docker image from Ansible node
+     command: docker rmi pet-adoption-image cloudhight/pet-adoption-image
+     ignore_errors: yes
+EOT

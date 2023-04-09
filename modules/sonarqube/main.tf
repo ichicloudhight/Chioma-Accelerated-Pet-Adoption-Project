@@ -1,11 +1,11 @@
 #create sonarqube server
 resource "aws_instance" "client1_sonarqube" {
-  ami                         = "ami-0f540e9f488cfa27d"
+  ami                         = "ami-09744628bed84e434"
   instance_type               = "t2.medium"
-  subnet_id                   = aws_subnet.client1_pub_sn2.id
+  subnet_id                   = var.client1pubsub1_id
   associate_public_ip_address = true
-  vpc_security_group_ids      = ["${aws_security_group.client1_sonarqube_sg.id}"]
-  key_name                    = aws_key_pair.client1_pub_key.key_name
+  vpc_security_group_ids      = [var.sonarqube_sg]
+  key_name                    = var.keypair
   user_data                   = local.sonarqube_user_data
 
 

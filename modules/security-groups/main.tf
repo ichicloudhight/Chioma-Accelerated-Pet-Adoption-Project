@@ -1,21 +1,21 @@
 # Create Ansible Security Group
 resource "aws_security_group" "client1_ansible_sg" {
-  name        = "client1-ansible-sg"
+  name        = "client1_ansible_sg"
   description = "Allow inbound traffic"
   vpc_id      = var.vpc_id
 
   ingress {
     description = "SSH"
-    from_port   = var.ssh_port
-    to_port     = var.ssh_port
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.all_ip]
   }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.all_ip]
   }
 
   tags = {
@@ -36,7 +36,7 @@ resource "aws_security_group" "client1_bastion_sg" {
     from_port   = var.ssh_port
     to_port     = var.ssh_port
     protocol    = "tcp"
-    cidr_blocks = ["*****/32"]    # my computer IP address
+    cidr_blocks = [var.all_ip]    # my computer IP address
   }
 
   egress {
@@ -61,7 +61,7 @@ resource "aws_security_group" "client1_jenkins_sg" {
     from_port   = var.jenkins_port
     to_port     = var.jenkins_port
     protocol    = "tcp"
-    security_group = [var.jenkins_lb_sg]    # security group attached to load balancer
+    cidr_blocks = [var.all_ip]    # security group attached to load balancer
   }
 
   ingress {
@@ -69,7 +69,7 @@ resource "aws_security_group" "client1_jenkins_sg" {
     from_port   = var.ssh_port
     to_port     = var.ssh_port
     protocol    = "tcp"
-    security_group = [aws_security_group.client1_bastion_sg.id]
+    cidr_blocks = [var.all_ip]
   }
   egress {
     from_port   = 0
@@ -78,47 +78,40 @@ resource "aws_security_group" "client1_jenkins_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Name = "client1_jenkins_sg"
-  }
+    Name = "client1_jenkins_sg"}
 }
 
 
 # Create docker-prod security group
-resource "aws_security_group" "client1_docker_sg" {
-  name        = "client1_docker_sg"
+resource "aws_security_group" "client1_dockerprod_sg" {
+  name        = "client1_dockerprod_sg"
   description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.client1_vpc.id
+  vpc_id      = var.vpc_id
+
 
   ingress {
     description = "SSH"
     from_port   = var.ssh_port
     to_port     = var.ssh_port
     protocol    = "tcp"
-    security_groups = [aws_security_group.client1_bastion_sg.id]
+    cidr_blocks = [var.all_ip]
   }
 
   ingress {
-    description = "SSH"
-    from_port   = var.ssh_port
-    to_port     = var.ssh_port
+    description = "Proxy access"
+    from_port   = var.jenkins_port
+    to_port     = var.jenkins_port
     protocol    = "tcp"
-    security_groups = [aws_security_group.client1_ansible_sg.id]
+    cidr_blocks = [var.all_ip]
   }
 
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    security_groups = [var.docker-prod-lb-sg]  # the security group attached to docker-prod load balancer
-  }
-  
-  ingress {
-    description = "APPLICATION"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    security_groups = [var.docker-prod-lb-sg]  
+   
+   ingress {
+     description = "APPLICATION"
+     from_port   = 8080
+     to_port     = 8080
+     protocol    = "tcp"
+     #cidr_blocks = [var.docker-prod-lb-sg]  
   }
 
   egress {
@@ -129,16 +122,16 @@ resource "aws_security_group" "client1_docker_sg" {
   }
 
   tags = {
-    Name = "client1_docker_sg"
+    Name = "client1_dockerprod_sg"
   }
 }
 
 
 # Create docker-stage security group
 resource "aws_security_group" "client1_dockerstage_sg" {
-  name        = "client1_docker_sg"
+  name        = "client1_dockerstage_sg"
   description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.client1_vpc.id
+  vpc_id      =  var.vpc_id
 
   ingress {
     description = "SSH"
@@ -156,22 +149,7 @@ resource "aws_security_group" "client1_dockerstage_sg" {
     security_groups = [aws_security_group.client1_ansible_sg.id]
   }
 
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    security_groups = [var.docker-stage-lb-sg]  # the security group attached to docker-stage load balancer
-  }
-  
-  ingress {
-    description = "APPLICATION"
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    security_groups = [var.docker-stage-lb-sg]  
-  }
-
+   
   egress {
     from_port   = 0
     to_port     = 0
@@ -189,14 +167,15 @@ resource "aws_security_group" "client1_dockerstage_sg" {
 resource "aws_security_group" "client1_sonarqube_sg" {
   name        = "client1_sonarqube_sg"
   description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.client1_vpc.id
+  vpc_id      = var.vpc_id
+
 
   ingress {
-    description = "proxy traffic"
+    description = "sonarqube"
     from_port   = 9000
     to_port     = 9000
     protocol    = "tcp"
-    cidr_blocks = ["197.210.79.184/32"]    # my computer IP address
+    cidr_blocks = [var.all_ip]    # my computer IP address
   }
 
   ingress {
@@ -204,16 +183,8 @@ resource "aws_security_group" "client1_sonarqube_sg" {
     from_port   = var.ssh_port
     to_port     = var.ssh_port
     protocol    = "tcp"
-    cidr_blocks = ["197.210.79.184/32"]    # my computer IP address
+    cidr_blocks = [var.all_ip]    # my computer IP address
   }
-
-ingress {
-    description = "SSH"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [aws_security_group.client1_jenkins_sg.id] 
-
 
   egress {
     from_port   = 0
@@ -225,5 +196,4 @@ ingress {
   tags = {
     Name = "client1_sonarqube_sg"
    }
- }
 }
