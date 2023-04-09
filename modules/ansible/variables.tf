@@ -17,53 +17,38 @@ variable "instance_type" {
 
 
 #public subnet id
-variable "SSKEU1pubsub1_id" {
+variable "client1pubsub1_id" {
 }
 
 #prv_key
 variable "prv_key" {
 }
 
-#master1ip
-variable "master1IP" {
+#ansibleIp
+variable "ansibleIP" {
 }
 
-#master2ip
-variable "master2IP" {
+#dockerstageIp
+variable "dockerstageIp" {
 }
 
-#workerip
-variable "worker1IP" {
+#dockersprodIp
+variable "dockerprodIp" {
 }
 
-#workerip
-variable "worker2IP" {
+#docker-image
+variable "docker-image" {
+    
 }
 
-# Cluster.yml
-variable "cluster_yml" {
+#dockerstage-container
+variable "dockerstage-container" {
 }
 
-# Deployment.yml
-variable "deployment_yml" {
-
+#dockerprod-container
+variable "dockerprod-container" {
 }
 
-# Join.yml
-variable "join_yml" {
-}
-
-#Installation.yml
-variable "installation_yml" {
-}
-
-# Monitoring.yml
-variable "monitoring_yml" {
-}
-
-# Mowadola.yml
-variable "mowadola_yml" {
-}
-
-variable "HAproxy_IP" {
+#Dockerfile
+variable "Dockerfile" {
 }

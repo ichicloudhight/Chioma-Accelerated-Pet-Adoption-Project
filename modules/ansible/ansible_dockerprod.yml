@@ -1,0 +1,24 @@
+touch /opt/docker/dockerprod-container.yml
+cat <<EOT>> /opt/docker/dockerprod-container.yml
+---
+ - hosts: dockerprod
+   become: true
+   tasks:
+   - name: login to dockerhub
+     command: docker login -u cloudhight -p CloudHight_Admin123@
+   - name: Stop any container running
+     command: docker stop pet-adoption-container
+     ignore_errors: yes
+   - name: Remove stopped container
+     command: docker rm pet-adoption-container
+     ignore_errors: yes
+   - name: Remove docker image
+     command: docker rmi cloudhight/pet-adoption-image
+     ignore_errors: yes
+   - name: Pull docker image from dockerhub
+     command: docker pull cloudhight/pet-adoption-image
+     ignore_errors: yes
+   - name: Create container from pet adoption image
+     command: docker run -it -d --name pet-adoption-container -p 8080:8085 cloudhight/pet-adoption-image
+     ignore_errors: yes
+EOT
